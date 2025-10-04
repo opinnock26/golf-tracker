@@ -1339,6 +1339,179 @@ ZlN0YXRzIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9j
             }
         });
 
+        // Function to initialize all event listeners
+        function initializeEventListeners() {
+            // Navigation buttons
+            document.getElementById('prevHole').addEventListener('click', () => {
+                saveHoleData();
+                if (currentHoleNum > 1) {
+                    currentHoleNum--;
+                    loadHoleData();
+                }
+            });
+
+            document.getElementById('nextHole').addEventListener('click', () => {
+                saveHoleData();
+                if (currentHoleNum < 18) {
+                    currentHoleNum++;
+                    loadHoleData();
+                } else {
+                    calculateSummary();
+                    document.querySelector('[data-view="summaryView"]').click();
+                }
+            });
+
+            document.getElementById('finishRound').addEventListener('click', () => {
+                saveHoleData();
+                calculateSummary();
+                const history = JSON.parse(localStorage.getItem('golfHistory') || '[]');
+                history.unshift({
+                    date: roundData.date || new Date().toISOString().split('T')[0],
+                    course: roundData.course || 'Unknown Course',
+                    data: roundData,
+                    coursePars: currentCourse ? currentCourse.pars : null,
+                    timestamp: Date.now()
+                });
+                if (history.length > 50) history.pop();
+                localStorage.setItem('golfHistory', JSON.stringify(history));
+                document.querySelector('[data-view="summaryView"]').click();
+            });
+
+            // Score and putts inputs
+            document.getElementById('score').addEventListener('input', () => {
+                saveHoleData();
+                updateScoreToPar();
+            });
+            document.getElementById('putts').addEventListener('input', saveHoleData);
+            document.getElementById('fairway').addEventListener('change', saveHoleData);
+
+            // Counter buttons
+            document.querySelectorAll('.counter-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const stat = e.target.dataset.stat;
+                    const action = e.target.dataset.action;
+                    const countEl = document.getElementById(`${stat}Count`);
+                    
+                    if (!countEl) return;
+                    
+                    let count = parseInt(countEl.textContent) || 0;
+                    
+                    if (action === 'plus') {
+                        count++;
+                    } else if (action === 'minus' && count > 0) {
+                        count--;
+                    }
+                    
+                    countEl.textContent = count;
+                    
+                    initHole(currentHoleNum);
+                    const hole = roundData.holes[currentHoleNum];
+                    
+                    if (stat === 'outside100' || stat === 'inside100') {
+                        hole[stat] = count;
+                    } else {
+                        if (!hole[stat]) {
+                            hole[stat] = { attempts: 0, successes: [] };
+                        }
+                        hole[stat].attempts = count;
+                        if (action === 'plus') {
+                            hole[stat].successes.push(undefined);
+                        } else if (action === 'minus' && hole[stat].successes.length > 0) {
+                            hole[stat].successes.pop();
+                        }
+                        updateSuccessTrackers();
+                    }
+                    
+                    const minusBtn = document.querySelector(`.counter-btn[data-stat="${stat}"][data-action="minus"]`);
+                    if (minusBtn) {
+                        minusBtn.disabled = count === 0;
+                    }
+                    
+                    saveHoleData();
+                });
+            });
+
+            // Course management
+            document.getElementById('courseSelect').addEventListener('change', (e) => {
+                const courseName = e.target.value;
+                if (courseName && courses[courseName]) {
+                    currentCourse = courses[courseName];
+                    roundData.course = courseName;
+                    localStorage.setItem('currentRound', JSON.stringify(roundData));
+                    loadHoleData();
+                } else {
+                    currentCourse = null;
+                    roundData.course = '';
+                    loadHoleData();
+                }
+            });
+
+            document.getElementById('manageCourses').addEventListener('click', () => {
+                loadCourseList();
+                document.getElementById('courseModal').classList.add('active');
+            });
+
+            document.getElementById('closeModal').addEventListener('click', () => {
+                document.getElementById('courseModal').classList.remove('active');
+            });
+
+            document.getElementById('saveCourse').addEventListener('click', () => {
+                const name = document.getElementById('newCourseName').value.trim();
+                if (!name) {
+                    alert('Please enter a course name');
+                    return;
+                }
+                
+                const pars = [];
+                for (let i = 1; i <= 18; i++) {
+                    pars.push(parseInt(document.getElementById(`par-${i}`).value));
+                }
+                
+                courses[name] = { pars };
+                localStorage.setItem('golfCourses', JSON.stringify(courses));
+                
+                document.getElementById('newCourseName').value = '';
+                loadCourseSelect();
+                loadCourseList();
+                
+                document.getElementById('courseSelect').value = name;
+                document.getElementById('courseSelect').dispatchEvent(new Event('change'));
+                
+                alert(`Course "${name}" saved!`);
+            });
+
+            // View navigation
+            document.querySelectorAll('.bottom-nav button').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.bottom-nav button').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    
+                    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+                    document.getElementById(e.target.dataset.view).classList.add('active');
+                    
+                    if (e.target.dataset.view === 'summaryView') {
+                        calculateSummary();
+                    }
+                });
+            });
+
+            // Export and new round
+            document.getElementById('exportData').addEventListener('click', exportToCSV);
+
+            document.getElementById('newRound').addEventListener('click', () => {
+                if (confirm('Start a new round? Current round data has been saved to history.')) {
+                    roundData = { course: '', date: '', holes: {} };
+                    currentHoleNum = 1;
+                    currentCourse = null;
+                    localStorage.removeItem('currentRound');
+                    document.getElementById('courseSelect').value = '';
+                    document.getElementById('roundDate').value = new Date().toISOString().split('T')[0];
+                    loadHoleData();
+                    document.querySelector('[data-view="roundView"]').click();
+                }
+            });
+        }
+
         // Initialize on load
         window.addEventListener('DOMContentLoaded', () => {
             try {
@@ -1363,6 +1536,7 @@ ZlN0YXRzIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9j
                 }
                 
                 loadHoleData();
+                initializeEventListeners();
             } catch (e) {
                 console.error('Initialization error:', e);
             }
