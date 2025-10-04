@@ -1,0 +1,1387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Golf Stats">
+    <meta name="theme-color" content="#1a5f3f">
+    <meta name="format-detection" content="telephone=no">
+    <title>Golf Stat Tracker Pro</title>
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiR29sZiBTdGF0IFRyYWNrZXIgUHJvIiwic2hvcnRfbmFtZSI6Ikdvb
+ZlN0YXRzIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9jb2xvciI6IiMxYTVmM2YiLCJ0aGVtZV9jb2xvciI6IiMxYTVmM2YiLCJvcmllbnRhdGlvbiI6InBvcnRyYWl0In0=">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='%231a5f3f'/><text x='50' y='65' font-size='50' text-anchor='middle' fill='white'>⛳</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        input, select, textarea {
+            -webkit-user-select: text;
+            user-select: text;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #1a5f3f 0%, #2d8659 100%);
+            min-height: 100vh;
+            color: #333;
+            padding-bottom: env(safe-area-inset-bottom, 60px);
+            padding-top: env(safe-area-inset-top);
+            -webkit-font-smoothing: antialiased;
+            overscroll-behavior: none;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            color: #1a5f3f;
+            margin-bottom: 10px;
+        }
+
+        .course-info {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .course-info input, .course-info select {
+            flex: 1;
+            min-width: 120px;
+            padding: 8px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .container {
+            padding: 20px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .hole-tracker {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .hole-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .hole-info {
+            flex: 1;
+        }
+
+        .hole-number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #1a5f3f;
+        }
+
+        .par-info {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .hole-nav {
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-btn {
+            background: #1a5f3f;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            -webkit-appearance: none;
+            touch-action: manipulation;
+        }
+
+        .nav-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .nav-btn:not(:disabled):active {
+            transform: scale(0.95);
+            background: #0d4f2f;
+        }
+
+        .score-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .score-input {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .score-input label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .score-input input, .score-input select {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 18px;
+            text-align: center;
+            font-weight: bold;
+            -webkit-appearance: none;
+            appearance: none;
+            background: white;
+        }
+
+        .score-input select {
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 20px;
+            padding-right: 35px;
+        }
+
+        .score-input input:focus, .score-input select:focus {
+            border-color: #1a5f3f;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(26, 95, 63, 0.1);
+        }
+
+        /* iOS number input spinner removal */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .score-to-par {
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+            margin-top: 5px;
+            min-height: 18px;
+        }
+
+        .score-to-par.birdie { color: #ff4444; }
+        .score-to-par.par { color: #1a5f3f; }
+        .score-to-par.bogey { color: #333; }
+
+        .stat-section {
+            margin-top: 20px;
+        }
+
+        .stat-section h3 {
+            font-size: 16px;
+            color: #1a5f3f;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .stat-group {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .counter-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 8px;
+        }
+
+        .counter-btn {
+            background: #1a5f3f;
+            color: white;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s;
+            -webkit-appearance: none;
+            touch-action: manipulation;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .counter-btn:active:not(:disabled) {
+            transform: scale(0.9);
+            background: #0d4f2f;
+        }
+
+        .counter-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .counter-display {
+            font-size: 20px;
+            font-weight: bold;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .success-tracker {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .success-btn {
+            padding: 10px 14px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            -webkit-appearance: none;
+            touch-action: manipulation;
+            min-width: 85px;
+        }
+
+        .success-btn:active {
+            transform: scale(0.95);
+        }
+
+        .success-btn.success {
+            background: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+
+        .success-btn.failure {
+            background: #ff6b6b;
+            color: white;
+            border-color: #ff6b6b;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 200;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            max-width: 400px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1a5f3f;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .course-list {
+            margin-bottom: 20px;
+        }
+
+        .course-item {
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .course-item:hover {
+            background: #e8f5e9;
+        }
+
+        .course-item.selected {
+            background: #1a5f3f;
+            color: white;
+        }
+
+        .delete-course {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .par-inputs {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .par-input {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .par-input label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .par-input select {
+            width: 60px;
+            padding: 8px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 10px 20px;
+            padding-bottom: max(10px, env(safe-area-inset-bottom));
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-around;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .bottom-nav button {
+            background: none;
+            border: none;
+            padding: 12px 20px;
+            font-size: 15px;
+            font-weight: 500;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 8px;
+            -webkit-appearance: none;
+            touch-action: manipulation;
+        }
+
+        .bottom-nav button:active {
+            transform: scale(0.95);
+        }
+
+        .bottom-nav button.active {
+            background: #1a5f3f;
+            color: white;
+        }
+
+        .summary {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .summary h2 {
+            color: #1a5f3f;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #1a5f3f;
+        }
+
+        .stat-name {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .primary-btn {
+            background: #1a5f3f;
+            color: white;
+        }
+
+        .finish-btn {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .export-btn {
+            background: #2196F3;
+            color: white;
+        }
+
+        .clear-btn {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .action-btn:active {
+            transform: scale(0.95);
+        }
+
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        @media (max-width: 400px) {
+            .score-section {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⛳ Golf Stat Tracker Pro</h1>
+        <div class="course-info">
+            <select id="courseSelect">
+                <option value="">Select Course...</option>
+            </select>
+            <button class="nav-btn" id="manageCourses" style="padding: 8px 12px; font-size: 14px;">Manage</button>
+            <input type="date" id="roundDate">
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Round View -->
+        <div id="roundView" class="view active">
+            <div class="hole-tracker">
+                <div class="hole-header">
+                    <div class="hole-info">
+                        <div class="hole-number">Hole <span id="currentHole">1</span></div>
+                        <div class="par-info">Par <span id="currentPar">-</span></div>
+                    </div>
+                    <div class="hole-nav">
+                        <button class="nav-btn" id="prevHole" disabled>← Prev</button>
+                        <button class="nav-btn" id="nextHole">Next →</button>
+                    </div>
+                </div>
+
+                <div class="score-section">
+                    <div class="score-input">
+                        <label>Score</label>
+                        <input type="number" id="score" min="1" max="15" inputmode="numeric">
+                        <div class="score-to-par" id="scoreToPar"></div>
+                    </div>
+                    <div class="score-input">
+                        <label>Putts</label>
+                        <input type="number" id="putts" min="0" max="10" inputmode="numeric">
+                    </div>
+                    <div class="score-input">
+                        <label>Fairway</label>
+                        <select id="fairway">
+                            <option value="na">N/A</option>
+                            <option value="hit">Hit</option>
+                            <option value="left">Left</option>
+                            <option value="right">Right</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="stat-section">
+                    <h3>Approach Shots</h3>
+                    
+                    <div class="stat-group">
+                        <div class="stat-label">
+                            <span>Shots Outside 100 Yards</span>
+                        </div>
+                        <div class="counter-group">
+                            <button class="counter-btn" data-stat="outside100" data-action="minus">−</button>
+                            <div class="counter-display" id="outside100Count">0</div>
+                            <button class="counter-btn" data-stat="outside100" data-action="plus">+</button>
+                        </div>
+                    </div>
+
+                    <div class="stat-group">
+                        <div class="stat-label">
+                            <span>Shots Inside 100 Yards</span>
+                        </div>
+                        <div class="counter-group">
+                            <button class="counter-btn" data-stat="inside100" data-action="minus">−</button>
+                            <div class="counter-display" id="inside100Count">0</div>
+                            <button class="counter-btn" data-stat="inside100" data-action="plus">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-section">
+                    <h3>Short Game Performance</h3>
+                    
+                    <div class="stat-group">
+                        <div class="stat-label">
+                            <span>Greenside shots (within 20ft?)</span>
+                        </div>
+                        <div class="counter-group">
+                            <button class="counter-btn" data-stat="greenside" data-action="minus">−</button>
+                            <div class="counter-display" id="greensideCount">0</div>
+                            <button class="counter-btn" data-stat="greenside" data-action="plus">+</button>
+                        </div>
+                        <div class="success-tracker" id="greensideTracker"></div>
+                    </div>
+
+                    <div class="stat-group">
+                        <div class="stat-label">
+                            <span>20-60 yard shots (hit green?)</span>
+                        </div>
+                        <div class="counter-group">
+                            <button class="counter-btn" data-stat="shot2060" data-action="minus">−</button>
+                            <div class="counter-display" id="shot2060Count">0</div>
+                            <button class="counter-btn" data-stat="shot2060" data-action="plus">+</button>
+                        </div>
+                        <div class="success-tracker" id="shot2060Tracker"></div>
+                    </div>
+
+                    <div class="stat-group">
+                        <div class="stat-label">
+                            <span>60-100 yard shots (hit green?)</span>
+                        </div>
+                        <div class="counter-group">
+                            <button class="counter-btn" data-stat="shot60100" data-action="minus">−</button>
+                            <div class="counter-display" id="shot60100Count">0</div>
+                            <button class="counter-btn" data-stat="shot60100" data-action="plus">+</button>
+                        </div>
+                        <div class="success-tracker" id="shot60100Tracker"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="action-btn finish-btn" id="finishRound">Finish Round</button>
+            </div>
+        </div>
+
+        <!-- Summary View -->
+        <div id="summaryView" class="view">
+            <div class="summary">
+                <h2>Round Summary</h2>
+                <div class="stat-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalScore">-</div>
+                        <div class="stat-name">Total Score</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="scoreToPar">-</div>
+                        <div class="stat-name">Score to Par</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalPutts">-</div>
+                        <div class="stat-name">Total Putts</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="fairwayPct">-</div>
+                        <div class="stat-name">Fairways Hit</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="summary">
+                <h2>Scoring Stats</h2>
+                <div class="stat-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="birdieCount">-</div>
+                        <div class="stat-name">Birdies or Better</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="parCount">-</div>
+                        <div class="stat-name">Pars</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="bogeyCount">-</div>
+                        <div class="stat-name">Bogeys</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="doublePlusCount">-</div>
+                        <div class="stat-name">Double+</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="summary">
+                <h2>Short Game Stats</h2>
+                <div class="stat-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="greenside20Pct">-</div>
+                        <div class="stat-name">Greenside ≤20ft</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="shot2060Pct">-</div>
+                        <div class="stat-name">20-60yd Hit Green</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="shot60100Pct">-</div>
+                        <div class="stat-name">60-100yd Hit Green</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="avgPutts">-</div>
+                        <div class="stat-name">Avg Putts/Hole</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="summary">
+                <h2>Approach Stats</h2>
+                <div class="stat-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="avgInside">-</div>
+                        <div class="stat-name">Avg Inside 100</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="avgOutside">-</div>
+                        <div class="stat-name">Avg Outside 100</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="action-btn export-btn" id="exportData">Export Data</button>
+                <button class="action-btn finish-btn" id="newRound">New Round</button>
+            </div>
+        </div>
+
+        <!-- History View -->
+        <div id="historyView" class="view">
+            <div id="historyList"></div>
+            <div class="action-buttons">
+                <button class="action-btn clear-btn" id="clearHistory">Clear All History</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Course Management Modal -->
+    <div id="courseModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">Manage Courses</div>
+            
+            <div class="course-list" id="courseList"></div>
+            
+            <div style="margin: 20px 0; padding: 20px 0; border-top: 2px solid #f0f0f0;">
+                <h3 style="margin-bottom: 15px; color: #1a5f3f;">Add New Course</h3>
+                <input type="text" id="newCourseName" placeholder="Course Name" style="width: 100%; padding: 10px; margin-bottom: 15px; border: 2px solid #e0e0e0; border-radius: 8px;">
+                
+                <div style="margin-bottom: 10px; font-size: 14px; color: #666;">Enter par for each hole:</div>
+                <div class="par-inputs">
+                    <!-- Generate 18 hole inputs -->
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="action-btn primary-btn" id="saveCourse">Save Course</button>
+                    <button class="action-btn" id="closeModal" style="background: #666; color: white;">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <button class="active" data-view="roundView">Round</button>
+        <button data-view="summaryView">Summary</button>
+        <button data-view="historyView">History</button>
+    </div>
+
+    <script>
+        // Data structure
+        let currentHoleNum = 1;
+        let courses = JSON.parse(localStorage.getItem('golfCourses') || '{}');
+        let currentCourse = null;
+        let roundData = {
+            course: '',
+            date: '',
+            holes: {}
+        };
+
+        // Initialize hole data
+        function initHole(holeNum) {
+            if (!roundData.holes[holeNum]) {
+                roundData.holes[holeNum] = {
+                    score: null,
+                    putts: null,
+                    fairway: 'na',
+                    outside100: 0,
+                    inside100: 0,
+                    greenside: { attempts: 0, successes: [] },
+                    shot2060: { attempts: 0, successes: [] },
+                    shot60100: { attempts: 0, successes: [] }
+                };
+            }
+            // Ensure structure exists for older saved data
+            if (typeof roundData.holes[holeNum].greenside === 'undefined') {
+                roundData.holes[holeNum].greenside = { attempts: 0, successes: [] };
+            }
+            if (typeof roundData.holes[holeNum].shot2060 === 'undefined') {
+                roundData.holes[holeNum].shot2060 = { attempts: 0, successes: [] };
+            }
+            if (typeof roundData.holes[holeNum].shot60100 === 'undefined') {
+                roundData.holes[holeNum].shot60100 = { attempts: 0, successes: [] };
+            }
+        }
+
+        // Generate par inputs for modal
+        function generateParInputs() {
+            const container = document.querySelector('.par-inputs');
+            for (let i = 1; i <= 18; i++) {
+                const div = document.createElement('div');
+                div.className = 'par-input';
+                div.innerHTML = `
+                    <label>H${i}</label>
+                    <select id="par-${i}">
+                        <option value="3">3</option>
+                        <option value="4" selected>4</option>
+                        <option value="5">5</option>
+                    </select>
+                `;
+                container.appendChild(div);
+            }
+        }
+
+        // Load courses into select
+        function loadCourseSelect() {
+            const select = document.getElementById('courseSelect');
+            select.innerHTML = '<option value="">Select Course...</option>';
+            Object.keys(courses).forEach(name => {
+                const option = document.createElement('option');
+                option.value = name;
+                option.textContent = name;
+                select.appendChild(option);
+            });
+        }
+
+        // Load course list in modal
+        function loadCourseList() {
+            const list = document.getElementById('courseList');
+            if (Object.keys(courses).length === 0) {
+                list.innerHTML = '<div style="padding: 20px; text-align: center; color: #666;">No courses saved yet</div>';
+                return;
+            }
+            
+            list.innerHTML = Object.keys(courses).map(name => {
+                const course = courses[name];
+                const totalPar = course.pars.reduce((a, b) => a + b, 0);
+                return `
+                    <div class="course-item" data-course="${name}">
+                        <div>
+                            <div style="font-weight: bold;">${name}</div>
+                            <div style="font-size: 12px; color: #666;">Par ${totalPar}</div>
+                        </div>
+                        <button class="delete-course" data-course="${name}">Delete</button>
+                    </div>
+                `;
+            }).join('');
+            
+            // Add delete handlers
+            document.querySelectorAll('.delete-course').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const courseName = e.target.dataset.course;
+                    if (confirm(`Delete ${courseName}?`)) {
+                        delete courses[courseName];
+                        localStorage.setItem('golfCourses', JSON.stringify(courses));
+                        loadCourseSelect();
+                        loadCourseList();
+                    }
+                });
+            });
+        }
+
+        // Update success/failure buttons
+        function updateSuccessTrackers() {
+            ['greenside', 'shot2060', 'shot60100'].forEach(stat => {
+                const tracker = document.getElementById(`${stat}Tracker`);
+                const hole = roundData.holes[currentHoleNum];
+                if (!hole) return;
+                
+                const data = hole[stat];
+                if (data.attempts === 0) {
+                    tracker.innerHTML = '';
+                    return;
+                }
+                
+                let html = '';
+                for (let i = 0; i < data.attempts; i++) {
+                    const isSuccess = data.successes[i] === true;
+                    const isFailure = data.successes[i] === false;
+                    const label = stat === 'greenside' ? 
+                        `${isSuccess ? '≤20ft' : isFailure ? '>20ft' : '?'}` :
+                        `${isSuccess ? 'Hit' : isFailure ? 'Miss' : '?'}`;
+                    html += `
+                        <button class="success-btn ${isSuccess ? 'success' : ''} ${isFailure ? 'failure' : ''}" 
+                                data-stat="${stat}" data-index="${i}">
+                            ${label}
+                        </button>
+                    `;
+                }
+                tracker.innerHTML = html;
+            });
+            
+            // Add click handlers for success buttons
+            document.querySelectorAll('.success-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const stat = e.target.dataset.stat;
+                    const index = parseInt(e.target.dataset.index);
+                    const hole = roundData.holes[currentHoleNum];
+                    
+                    if (!hole || !hole[stat]) return;
+                    
+                    // Cycle through: undefined → true → false → undefined
+                    const current = hole[stat].successes[index];
+                    if (current === undefined) {
+                        hole[stat].successes[index] = true;
+                    } else if (current === true) {
+                        hole[stat].successes[index] = false;
+                    } else {
+                        hole[stat].successes[index] = undefined;
+                    }
+                    
+                    saveHoleData();
+                    updateSuccessTrackers();
+                });
+            });
+        }
+        }
+
+        // Update score to par display
+        function updateScoreToPar() {
+            const score = parseInt(document.getElementById('score').value);
+            const display = document.getElementById('scoreToPar');
+            
+            if (!currentCourse || !score) {
+                display.textContent = '';
+                display.className = 'score-to-par';
+                return;
+            }
+            
+            const par = currentCourse.pars[currentHoleNum - 1];
+            const diff = score - par;
+            
+            if (diff <= -2) {
+                display.textContent = 'Eagle or better!';
+                display.className = 'score-to-par birdie';
+            } else if (diff === -1) {
+                display.textContent = 'Birdie';
+                display.className = 'score-to-par birdie';
+            } else if (diff === 0) {
+                display.textContent = 'Par';
+                display.className = 'score-to-par par';
+            } else if (diff === 1) {
+                display.textContent = 'Bogey';
+                display.className = 'score-to-par bogey';
+            } else if (diff === 2) {
+                display.textContent = 'Double Bogey';
+                display.className = 'score-to-par bogey';
+            } else {
+                display.textContent = `+${diff}`;
+                display.className = 'score-to-par bogey';
+            }
+        }
+
+        // Load data for current hole
+        function loadHoleData() {
+            initHole(currentHoleNum);
+            const hole = roundData.holes[currentHoleNum];
+            
+            // Update hole number and par display
+            document.getElementById('currentHole').textContent = currentHoleNum;
+            if (currentCourse && currentCourse.pars) {
+                document.getElementById('currentPar').textContent = currentCourse.pars[currentHoleNum - 1];
+            } else {
+                document.getElementById('currentPar').textContent = '-';
+            }
+            
+            // Load score and putts
+            document.getElementById('score').value = hole.score || '';
+            document.getElementById('putts').value = hole.putts || '';
+            document.getElementById('fairway').value = hole.fairway || 'na';
+            
+            // Load counters with null checks
+            document.getElementById('outside100Count').textContent = hole.outside100 || 0;
+            document.getElementById('inside100Count').textContent = hole.inside100 || 0;
+            document.getElementById('greensideCount').textContent = hole.greenside?.attempts || 0;
+            document.getElementById('shot2060Count').textContent = hole.shot2060?.attempts || 0;
+            document.getElementById('shot60100Count').textContent = hole.shot60100?.attempts || 0;
+            
+            // Update success trackers
+            updateSuccessTrackers();
+            updateScoreToPar();
+            
+            // Update navigation buttons
+            document.getElementById('prevHole').disabled = currentHoleNum === 1;
+            document.getElementById('nextHole').textContent = currentHoleNum === 18 ? 'Finish' : 'Next →';
+            
+            // Update minus button states
+            document.querySelectorAll('.counter-btn[data-action="minus"]').forEach(btn => {
+                const stat = btn.dataset.stat;
+                const countEl = document.getElementById(`${stat}Count`);
+                if (countEl) {
+                    const count = countEl.textContent;
+                    btn.disabled = count === '0';
+                }
+            });
+        }
+
+        // Save current hole data
+        function saveHoleData() {
+            initHole(currentHoleNum);
+            const hole = roundData.holes[currentHoleNum];
+            
+            hole.score = parseInt(document.getElementById('score').value) || null;
+            hole.putts = parseInt(document.getElementById('putts').value) || null;
+            hole.fairway = document.getElementById('fairway').value;
+            
+            // Counts are saved via counter buttons
+            
+            // Save to localStorage
+            localStorage.setItem('currentRound', JSON.stringify(roundData));
+        }
+
+        // Calculate summary statistics
+        function calculateSummary() {
+            let totalScore = 0;
+            let totalPutts = 0;
+            let totalInside = 0;
+            let totalOutside = 0;
+            let holesPlayed = 0;
+            let fairwaysHit = 0;
+            let fairwayOpportunities = 0;
+            let totalPar = 0;
+            
+            let birdies = 0, pars = 0, bogeys = 0, doublePlus = 0;
+            
+            let greenside20Success = 0;
+            let greenside20Total = 0;
+            let shot2060Success = 0;
+            let shot2060Total = 0;
+            let shot60100Success = 0;
+            let shot60100Total = 0;
+            
+            for (let i = 1; i <= 18; i++) {
+                const hole = roundData.holes[i];
+                if (hole && hole.score) {
+                    holesPlayed++;
+                    totalScore += hole.score;
+                    totalPutts += hole.putts || 0;
+                    totalInside += hole.inside100 || 0;
+                    totalOutside += hole.outside100 || 0;
+                    
+                    if (hole.fairway === 'hit') fairwaysHit++;
+                    if (hole.fairway !== 'na') fairwayOpportunities++;
+                    
+                    // Count scoring
+                    if (currentCourse && currentCourse.pars) {
+                        const par = currentCourse.pars[i - 1];
+                        totalPar += par;
+                        const diff = hole.score - par;
+                        
+                        if (diff <= -1) birdies++;
+                        else if (diff === 0) pars++;
+                        else if (diff === 1) bogeys++;
+                        else doublePlus++;
+                    }
+                    
+                    // Count short game successes with null checks
+                    if (hole.greenside && hole.greenside.attempts) {
+                        greenside20Total += hole.greenside.attempts;
+                        greenside20Success += (hole.greenside.successes || []).filter(s => s === true).length;
+                    }
+                    
+                    if (hole.shot2060 && hole.shot2060.attempts) {
+                        shot2060Total += hole.shot2060.attempts;
+                        shot2060Success += (hole.shot2060.successes || []).filter(s => s === true).length;
+                    }
+                    
+                    if (hole.shot60100 && hole.shot60100.attempts) {
+                        shot60100Total += hole.shot60100.attempts;
+                        shot60100Success += (hole.shot60100.successes || []).filter(s => s === true).length;
+                    }
+                }
+            }
+            
+            // Update summary display
+            document.getElementById('totalScore').textContent = totalScore || '-';
+            document.getElementById('scoreToPar').textContent = currentCourse && totalPar ? 
+                (totalScore > totalPar ? '+' : '') + (totalScore - totalPar) : '-';
+            document.getElementById('totalPutts').textContent = totalPutts || '-';
+            document.getElementById('fairwayPct').textContent = fairwayOpportunities ? 
+                `${Math.round(fairwaysHit / fairwayOpportunities * 100)}%` : '-';
+            
+            document.getElementById('birdieCount').textContent = birdies;
+            document.getElementById('parCount').textContent = pars;
+            document.getElementById('bogeyCount').textContent = bogeys;
+            document.getElementById('doublePlusCount').textContent = doublePlus;
+            
+            document.getElementById('avgInside').textContent = holesPlayed ? 
+                (totalInside / holesPlayed).toFixed(1) : '-';
+            document.getElementById('avgOutside').textContent = holesPlayed ? 
+                (totalOutside / holesPlayed).toFixed(1) : '-';
+            document.getElementById('avgPutts').textContent = holesPlayed ? 
+                (totalPutts / holesPlayed).toFixed(1) : '-';
+            
+            document.getElementById('greenside20Pct').textContent = greenside20Total ? 
+                `${Math.round(greenside20Success / greenside20Total * 100)}%` : 'N/A';
+            document.getElementById('shot2060Pct').textContent = shot2060Total ? 
+                `${Math.round(shot2060Success / shot2060Total * 100)}%` : 'N/A';
+            document.getElementById('shot60100Pct').textContent = shot60100Total ? 
+                `${Math.round(shot60100Success / shot60100Total * 100)}%` : 'N/A';
+        }
+
+        // Export data to CSV
+        function exportToCSV() {
+            let csv = 'Hole,Par,Score,To Par,Putts,Fairway,Outside 100,Inside 100,Greenside Success,20-60yd Success,60-100yd Success\n';
+            
+            for (let i = 1; i <= 18; i++) {
+                const hole = roundData.holes[i];
+                if (hole && hole.score) {
+                    const par = currentCourse ? currentCourse.pars[i - 1] : '';
+                    const toPar = currentCourse ? hole.score - par : '';
+                    
+                    const greensideRate = hole.greenside.attempts ? 
+                        `${hole.greenside.successes.filter(s => s === true).length}/${hole.greenside.attempts}` : '';
+                    const shot2060Rate = hole.shot2060.attempts ? 
+                        `${hole.shot2060.successes.filter(s => s === true).length}/${hole.shot2060.attempts}` : '';
+                    const shot60100Rate = hole.shot60100.attempts ? 
+                        `${hole.shot60100.successes.filter(s => s === true).length}/${hole.shot60100.attempts}` : '';
+                    
+                    csv += `${i},${par},${hole.score},${toPar},${hole.putts || ''},${hole.fairway},`;
+                    csv += `${hole.outside100},${hole.inside100},${greensideRate},${shot2060Rate},${shot60100Rate}\n`;
+                }
+            }
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `golf-stats-${roundData.date || 'round'}.csv`;
+            a.click();
+        }
+
+        // Event Listeners
+        
+        // Navigation
+        document.getElementById('prevHole').addEventListener('click', () => {
+            saveHoleData();
+            if (currentHoleNum > 1) {
+                currentHoleNum--;
+                loadHoleData();
+            }
+        });
+
+        document.getElementById('nextHole').addEventListener('click', () => {
+            saveHoleData();
+            if (currentHoleNum < 18) {
+                currentHoleNum++;
+                loadHoleData();
+            } else {
+                calculateSummary();
+                document.querySelector('[data-view="summaryView"]').click();
+            }
+        });
+
+        document.getElementById('finishRound').addEventListener('click', () => {
+            saveHoleData();
+            calculateSummary();
+            // Save to history
+            const history = JSON.parse(localStorage.getItem('golfHistory') || '[]');
+            history.unshift({
+                date: roundData.date || new Date().toISOString().split('T')[0],
+                course: roundData.course || 'Unknown Course',
+                data: roundData,
+                coursePars: currentCourse ? currentCourse.pars : null,
+                timestamp: Date.now()
+            });
+            if (history.length > 50) history.pop();
+            localStorage.setItem('golfHistory', JSON.stringify(history));
+            
+            document.querySelector('[data-view="summaryView"]').click();
+        });
+
+        // Score and putts inputs
+        document.getElementById('score').addEventListener('input', () => {
+            saveHoleData();
+            updateScoreToPar();
+        });
+        document.getElementById('putts').addEventListener('input', saveHoleData);
+        document.getElementById('fairway').addEventListener('change', saveHoleData);
+
+        // Counter buttons
+        document.querySelectorAll('.counter-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const stat = e.target.dataset.stat;
+                const action = e.target.dataset.action;
+                const countEl = document.getElementById(`${stat}Count`);
+                
+                if (!countEl) return;
+                
+                let count = parseInt(countEl.textContent) || 0;
+                
+                if (action === 'plus') {
+                    count++;
+                } else if (action === 'minus' && count > 0) {
+                    count--;
+                }
+                
+                countEl.textContent = count;
+                
+                initHole(currentHoleNum);
+                const hole = roundData.holes[currentHoleNum];
+                
+                // Update data based on stat type
+                if (stat === 'outside100' || stat === 'inside100') {
+                    hole[stat] = count;
+                } else {
+                    // For short game stats, ensure structure exists
+                    if (!hole[stat]) {
+                        hole[stat] = { attempts: 0, successes: [] };
+                    }
+                    hole[stat].attempts = count;
+                    if (action === 'plus') {
+                        hole[stat].successes.push(undefined);
+                    } else if (action === 'minus' && hole[stat].successes.length > 0) {
+                        hole[stat].successes.pop();
+                    }
+                    updateSuccessTrackers();
+                }
+                
+                // Update minus button state
+                const minusBtn = document.querySelector(`.counter-btn[data-stat="${stat}"][data-action="minus"]`);
+                if (minusBtn) {
+                    minusBtn.disabled = count === 0;
+                }
+                
+                saveHoleData();
+            });
+        });
+
+        // Course management
+        document.getElementById('courseSelect').addEventListener('change', (e) => {
+            const courseName = e.target.value;
+            if (courseName && courses[courseName]) {
+                currentCourse = courses[courseName];
+                roundData.course = courseName;
+                localStorage.setItem('currentRound', JSON.stringify(roundData));
+                loadHoleData();
+            } else {
+                currentCourse = null;
+                roundData.course = '';
+                loadHoleData();
+            }
+        });
+
+        document.getElementById('manageCourses').addEventListener('click', () => {
+            loadCourseList();
+            document.getElementById('courseModal').classList.add('active');
+        });
+
+        document.getElementById('closeModal').addEventListener('click', () => {
+            document.getElementById('courseModal').classList.remove('active');
+        });
+
+        document.getElementById('saveCourse').addEventListener('click', () => {
+            const name = document.getElementById('newCourseName').value.trim();
+            if (!name) {
+                alert('Please enter a course name');
+                return;
+            }
+            
+            const pars = [];
+            for (let i = 1; i <= 18; i++) {
+                pars.push(parseInt(document.getElementById(`par-${i}`).value));
+            }
+            
+            courses[name] = { pars };
+            localStorage.setItem('golfCourses', JSON.stringify(courses));
+            
+            document.getElementById('newCourseName').value = '';
+            loadCourseSelect();
+            loadCourseList();
+            
+            // Auto-select the new course
+            document.getElementById('courseSelect').value = name;
+            document.getElementById('courseSelect').dispatchEvent(new Event('change'));
+            
+            alert(`Course "${name}" saved!`);
+        });
+
+        // View navigation
+        document.querySelectorAll('.bottom-nav button').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.bottom-nav button').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                
+                document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+                document.getElementById(e.target.dataset.view).classList.add('active');
+                
+                if (e.target.dataset.view === 'summaryView') {
+                    calculateSummary();
+                }
+            });
+        });
+
+        // Export and new round
+        document.getElementById('exportData').addEventListener('click', exportToCSV);
+
+        document.getElementById('newRound').addEventListener('click', () => {
+            if (confirm('Start a new round? Current round data has been saved to history.')) {
+                roundData = { course: '', date: '', holes: {} };
+                currentHoleNum = 1;
+                currentCourse = null;
+                localStorage.removeItem('currentRound');
+                document.getElementById('courseSelect').value = '';
+                document.getElementById('roundDate').value = new Date().toISOString().split('T')[0];
+                loadHoleData();
+                document.querySelector('[data-view="roundView"]').click();
+            }
+        });
+
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', () => {
+            try {
+                generateParInputs();
+                loadCourseSelect();
+                
+                document.getElementById('roundDate').value = new Date().toISOString().split('T')[0];
+                
+                const saved = localStorage.getItem('currentRound');
+                if (saved) {
+                    try {
+                        roundData = JSON.parse(saved);
+                        document.getElementById('courseSelect').value = roundData.course || '';
+                        if (roundData.course && courses[roundData.course]) {
+                            currentCourse = courses[roundData.course];
+                        }
+                        document.getElementById('roundDate').value = roundData.date || new Date().toISOString().split('T')[0];
+                    } catch (e) {
+                        console.error('Error loading saved round:', e);
+                        roundData = { course: '', date: '', holes: {} };
+                    }
+                }
+                
+                loadHoleData();
+            } catch (e) {
+                console.error('Initialization error:', e);
+            }
+        });
+
+        // Service Worker for offline
+        if ('serviceWorker' in navigator) {
+            const sw = `
+                self.addEventListener('install', e => {
+                    self.skipWaiting();
+                });
+                self.addEventListener('fetch', e => {
+                    e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+                });
+            `;
+            const blob = new Blob([sw], { type: 'application/javascript' });
+            const swUrl = URL.createObjectURL(blob);
+            navigator.serviceWorker.register(swUrl).catch(() => {});
+        }
+    </script>
+</body>
+</html>
