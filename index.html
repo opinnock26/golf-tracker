@@ -544,10 +544,10 @@ ZlN0YXRzIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9j
     <div class="header">
         <h1>⛳ Golf Stat Tracker Pro</h1>
         <div class="course-info">
-            <select id="courseSelect">
+            <select id="courseSelect" onchange="selectCourse()">
                 <option value="">Select Course...</option>
             </select>
-            <button class="nav-btn" id="manageCourses" style="padding: 8px 12px; font-size: 14px;">Manage</button>
+            <button class="nav-btn" onclick="manageCourses()" style="padding: 8px 12px; font-size: 14px;">Manage</button>
             <input type="date" id="roundDate">
         </div>
     </div>
@@ -562,24 +562,24 @@ ZlN0YXRzIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9j
                         <div class="par-info">Par <span id="currentPar">-</span></div>
                     </div>
                     <div class="hole-nav">
-                        <button class="nav-btn" id="prevHole" disabled>← Prev</button>
-                        <button class="nav-btn" id="nextHole">Next →</button>
+                        <button class="nav-btn" id="prevHole" onclick="navigateHole('prev')" disabled>← Prev</button>
+                        <button class="nav-btn" id="nextHole" onclick="navigateHole('next')">Next →</button>
                     </div>
                 </div>
 
                 <div class="score-section">
                     <div class="score-input">
                         <label>Score</label>
-                        <input type="number" id="score" min="1" max="15" inputmode="numeric">
+                        <input type="number" id="score" min="1" max="15" inputmode="numeric" onchange="saveHoleData(); updateScoreToPar();">
                         <div class="score-to-par" id="scoreToPar"></div>
                     </div>
                     <div class="score-input">
                         <label>Putts</label>
-                        <input type="number" id="putts" min="0" max="10" inputmode="numeric">
+                        <input type="number" id="putts" min="0" max="10" inputmode="numeric" onchange="saveHoleData()">
                     </div>
                     <div class="score-input">
                         <label>Fairway</label>
-                        <select id="fairway">
+                        <select id="fairway" onchange="saveHoleData()">
                             <option value="na">N/A</option>
                             <option value="hit">Hit</option>
                             <option value="left">Left</option>
@@ -596,9 +596,9 @@ ZlN0YXRzIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9j
                             <span>Shots Outside 100 Yards</span>
                         </div>
                         <div class="counter-group">
-                            <button class="counter-btn" data-stat="outside100" data-action="minus">−</button>
+                            <button class="counter-btn" onclick="updateCounter('outside100', 'minus')">−</button>
                             <div class="counter-display" id="outside100Count">0</div>
-                            <button class="counter-btn" data-stat="outside100" data-action="plus">+</button>
+                            <button class="counter-btn" onclick="updateCounter('outside100', 'plus')">+</button>
                         </div>
                     </div>
 
@@ -607,9 +607,9 @@ ZlN0YXRzIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9j
                             <span>Shots Inside 100 Yards</span>
                         </div>
                         <div class="counter-group">
-                            <button class="counter-btn" data-stat="inside100" data-action="minus">−</button>
+                            <button class="counter-btn" onclick="updateCounter('inside100', 'minus')">−</button>
                             <div class="counter-display" id="inside100Count">0</div>
-                            <button class="counter-btn" data-stat="inside100" data-action="plus">+</button>
+                            <button class="counter-btn" onclick="updateCounter('inside100', 'plus')">+</button>
                         </div>
                     </div>
                 </div>
@@ -622,9 +622,9 @@ ZlN0YXRzIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9j
                             <span>Greenside shots (within 20ft?)</span>
                         </div>
                         <div class="counter-group">
-                            <button class="counter-btn" data-stat="greenside" data-action="minus">−</button>
+                            <button class="counter-btn" onclick="updateCounter('greenside', 'minus')">−</button>
                             <div class="counter-display" id="greensideCount">0</div>
-                            <button class="counter-btn" data-stat="greenside" data-action="plus">+</button>
+                            <button class="counter-btn" onclick="updateCounter('greenside', 'plus')">+</button>
                         </div>
                         <div class="success-tracker" id="greensideTracker"></div>
                     </div>
@@ -634,9 +634,9 @@ ZlN0YXRzIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9j
                             <span>20-60 yard shots (hit green?)</span>
                         </div>
                         <div class="counter-group">
-                            <button class="counter-btn" data-stat="shot2060" data-action="minus">−</button>
+                            <button class="counter-btn" onclick="updateCounter('shot2060', 'minus')">−</button>
                             <div class="counter-display" id="shot2060Count">0</div>
-                            <button class="counter-btn" data-stat="shot2060" data-action="plus">+</button>
+                            <button class="counter-btn" onclick="updateCounter('shot2060', 'plus')">+</button>
                         </div>
                         <div class="success-tracker" id="shot2060Tracker"></div>
                     </div>
@@ -646,9 +646,9 @@ ZlN0YXRzIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9j
                             <span>60-100 yard shots (hit green?)</span>
                         </div>
                         <div class="counter-group">
-                            <button class="counter-btn" data-stat="shot60100" data-action="minus">−</button>
+                            <button class="counter-btn" onclick="updateCounter('shot60100', 'minus')">−</button>
                             <div class="counter-display" id="shot60100Count">0</div>
-                            <button class="counter-btn" data-stat="shot60100" data-action="plus">+</button>
+                            <button class="counter-btn" onclick="updateCounter('shot60100', 'plus')">+</button>
                         </div>
                         <div class="success-tracker" id="shot60100Tracker"></div>
                     </div>
@@ -656,7 +656,7 @@ ZlN0YXRzIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9j
             </div>
 
             <div class="action-buttons">
-                <button class="action-btn finish-btn" id="finishRound">Finish Round</button>
+                <button class="action-btn finish-btn" onclick="finishRound()">Finish Round</button>
             </div>
         </div>
 
@@ -743,8 +743,8 @@ ZlN0YXRzIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9j
             </div>
 
             <div class="action-buttons">
-                <button class="action-btn export-btn" id="exportData">Export Data</button>
-                <button class="action-btn finish-btn" id="newRound">New Round</button>
+                <button class="action-btn export-btn" onclick="exportToCSV()">Export Data</button>
+                <button class="action-btn finish-btn" onclick="newRound()">New Round</button>
             </div>
         </div>
 
@@ -752,7 +752,7 @@ ZlN0YXRzIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9j
         <div id="historyView" class="view">
             <div id="historyList"></div>
             <div class="action-buttons">
-                <button class="action-btn clear-btn" id="clearHistory">Clear All History</button>
+                <button class="action-btn clear-btn" onclick="clearHistory()">Clear All History</button>
             </div>
         </div>
     </div>
@@ -774,29 +774,216 @@ ZlN0YXRzIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9j
                 </div>
                 
                 <div class="action-buttons">
-                    <button class="action-btn primary-btn" id="saveCourse">Save Course</button>
-                    <button class="action-btn" id="closeModal" style="background: #666; color: white;">Close</button>
+                    <button class="action-btn primary-btn" onclick="saveCourse()">Save Course</button>
+                    <button class="action-btn" onclick="closeModal()" style="background: #666; color: white;">Close</button>
                 </div>
             </div>
         </div>
     </div>
 
     <div class="bottom-nav">
-        <button class="active" data-view="roundView">Round</button>
-        <button data-view="summaryView">Summary</button>
-        <button data-view="historyView">History</button>
+        <button class="active" onclick="showView('roundView')">Round</button>
+        <button onclick="showView('summaryView')">Summary</button>
+        <button onclick="showView('historyView')">History</button>
     </div>
 
     <script>
         // Data structure
         let currentHoleNum = 1;
-        let courses = JSON.parse(localStorage.getItem('golfCourses') || '{}');
+        let courses = {};
         let currentCourse = null;
         let roundData = {
             course: '',
             date: '',
             holes: {}
         };
+
+        // Load saved courses on startup
+        try {
+            const savedCourses = localStorage.getItem('golfCourses');
+            if (savedCourses) {
+                courses = JSON.parse(savedCourses);
+            }
+        } catch (e) {
+            console.error('Error loading courses:', e);
+        }
+
+        // Navigation functions
+        function navigateHole(direction) {
+            saveHoleData();
+            if (direction === 'prev' && currentHoleNum > 1) {
+                currentHoleNum--;
+                loadHoleData();
+            } else if (direction === 'next') {
+                if (currentHoleNum < 18) {
+                    currentHoleNum++;
+                    loadHoleData();
+                } else {
+                    finishRound();
+                }
+            }
+        }
+
+        // Counter update function
+        function updateCounter(stat, action) {
+            const countEl = document.getElementById(`${stat}Count`);
+            if (!countEl) return;
+            
+            let count = parseInt(countEl.textContent) || 0;
+            
+            if (action === 'plus') {
+                count++;
+            } else if (action === 'minus' && count > 0) {
+                count--;
+            }
+            
+            countEl.textContent = count;
+            
+            initHole(currentHoleNum);
+            const hole = roundData.holes[currentHoleNum];
+            
+            if (stat === 'outside100' || stat === 'inside100') {
+                hole[stat] = count;
+            } else {
+                if (!hole[stat]) {
+                    hole[stat] = { attempts: 0, successes: [] };
+                }
+                hole[stat].attempts = count;
+                if (action === 'plus') {
+                    hole[stat].successes.push(undefined);
+                } else if (action === 'minus' && hole[stat].successes.length > 0) {
+                    hole[stat].successes.pop();
+                }
+                updateSuccessTrackers();
+            }
+            
+            // Update minus button state
+            const minusButtons = document.querySelectorAll('.counter-btn');
+            minusButtons.forEach(btn => {
+                if (btn.textContent === '−' && btn.onclick && btn.onclick.toString().includes(stat)) {
+                    btn.disabled = count === 0;
+                }
+            });
+            
+            saveHoleData();
+        }
+
+        // Toggle success/failure for shot
+        function toggleSuccess(stat, index) {
+            const hole = roundData.holes[currentHoleNum];
+            if (!hole || !hole[stat]) return;
+            
+            const current = hole[stat].successes[index];
+            if (current === undefined) {
+                hole[stat].successes[index] = true;
+            } else if (current === true) {
+                hole[stat].successes[index] = false;
+            } else {
+                hole[stat].successes[index] = undefined;
+            }
+            
+            saveHoleData();
+            updateSuccessTrackers();
+        }
+
+        function finishRound() {
+            saveHoleData();
+            calculateSummary();
+            const history = JSON.parse(localStorage.getItem('golfHistory') || '[]');
+            history.unshift({
+                date: roundData.date || new Date().toISOString().split('T')[0],
+                course: roundData.course || 'Unknown Course',
+                data: roundData,
+                coursePars: currentCourse ? currentCourse.pars : null,
+                timestamp: Date.now()
+            });
+            if (history.length > 50) history.pop();
+            localStorage.setItem('golfHistory', JSON.stringify(history));
+            showView('summaryView');
+        }
+
+        function showView(viewId) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+            
+            document.querySelectorAll('.bottom-nav button').forEach(b => b.classList.remove('active'));
+            const navBtn = document.querySelector(`[onclick="showView('${viewId}')"]`);
+            if (navBtn) navBtn.classList.add('active');
+            
+            if (viewId === 'summaryView') {
+                calculateSummary();
+            } else if (viewId === 'historyView') {
+                loadHistory();
+            }
+        }
+
+        function manageCourses() {
+            loadCourseList();
+            document.getElementById('courseModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('courseModal').classList.remove('active');
+        }
+
+        function saveCourse() {
+            const name = document.getElementById('newCourseName').value.trim();
+            if (!name) {
+                alert('Please enter a course name');
+                return;
+            }
+            
+            const pars = [];
+            for (let i = 1; i <= 18; i++) {
+                pars.push(parseInt(document.getElementById(`par-${i}`).value));
+            }
+            
+            courses[name] = { pars };
+            localStorage.setItem('golfCourses', JSON.stringify(courses));
+            
+            document.getElementById('newCourseName').value = '';
+            loadCourseSelect();
+            loadCourseList();
+            
+            document.getElementById('courseSelect').value = name;
+            selectCourse();
+            
+            alert(`Course "${name}" saved!`);
+        }
+
+        function selectCourse() {
+            const courseName = document.getElementById('courseSelect').value;
+            if (courseName && courses[courseName]) {
+                currentCourse = courses[courseName];
+                roundData.course = courseName;
+                localStorage.setItem('currentRound', JSON.stringify(roundData));
+                loadHoleData();
+            } else {
+                currentCourse = null;
+                roundData.course = '';
+                loadHoleData();
+            }
+        }
+
+        function newRound() {
+            if (confirm('Start a new round? Current round data has been saved to history.')) {
+                roundData = { course: '', date: '', holes: {} };
+                currentHoleNum = 1;
+                currentCourse = null;
+                localStorage.removeItem('currentRound');
+                document.getElementById('courseSelect').value = '';
+                document.getElementById('roundDate').value = new Date().toISOString().split('T')[0];
+                loadHoleData();
+                showView('roundView');
+            }
+        }
+
+        function clearHistory() {
+            if (confirm('Clear all history? This cannot be undone.')) {
+                localStorage.removeItem('golfHistory');
+                loadHistory();
+            }
+        }
 
         // Initialize hole data
         function initHole(holeNum) {
@@ -899,7 +1086,7 @@ ZlN0YXRzIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9j
                 if (!hole) return;
                 
                 const data = hole[stat];
-                if (data.attempts === 0) {
+                if (!data || data.attempts === 0) {
                     tracker.innerHTML = '';
                     return;
                 }
@@ -913,36 +1100,12 @@ ZlN0YXRzIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9j
                         `${isSuccess ? 'Hit' : isFailure ? 'Miss' : '?'}`;
                     html += `
                         <button class="success-btn ${isSuccess ? 'success' : ''} ${isFailure ? 'failure' : ''}" 
-                                data-stat="${stat}" data-index="${i}">
+                                onclick="toggleSuccess('${stat}', ${i})">
                             ${label}
                         </button>
                     `;
                 }
                 tracker.innerHTML = html;
-            });
-            
-            // Add click handlers for success buttons
-            document.querySelectorAll('.success-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const stat = e.target.dataset.stat;
-                    const index = parseInt(e.target.dataset.index);
-                    const hole = roundData.holes[currentHoleNum];
-                    
-                    if (!hole || !hole[stat]) return;
-                    
-                    // Cycle through: undefined → true → false → undefined
-                    const current = hole[stat].successes[index];
-                    if (current === undefined) {
-                        hole[stat].successes[index] = true;
-                    } else if (current === true) {
-                        hole[stat].successes[index] = false;
-                    } else {
-                        hole[stat].successes[index] = undefined;
-                    }
-                    
-                    saveHoleData();
-                    updateSuccessTrackers();
-                });
             });
         }
         }
@@ -1339,181 +1502,8 @@ ZlN0YXRzIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9j
             }
         });
 
-        // Function to initialize all event listeners
-        function initializeEventListeners() {
-            // Navigation buttons
-            document.getElementById('prevHole').addEventListener('click', () => {
-                saveHoleData();
-                if (currentHoleNum > 1) {
-                    currentHoleNum--;
-                    loadHoleData();
-                }
-            });
-
-            document.getElementById('nextHole').addEventListener('click', () => {
-                saveHoleData();
-                if (currentHoleNum < 18) {
-                    currentHoleNum++;
-                    loadHoleData();
-                } else {
-                    calculateSummary();
-                    document.querySelector('[data-view="summaryView"]').click();
-                }
-            });
-
-            document.getElementById('finishRound').addEventListener('click', () => {
-                saveHoleData();
-                calculateSummary();
-                const history = JSON.parse(localStorage.getItem('golfHistory') || '[]');
-                history.unshift({
-                    date: roundData.date || new Date().toISOString().split('T')[0],
-                    course: roundData.course || 'Unknown Course',
-                    data: roundData,
-                    coursePars: currentCourse ? currentCourse.pars : null,
-                    timestamp: Date.now()
-                });
-                if (history.length > 50) history.pop();
-                localStorage.setItem('golfHistory', JSON.stringify(history));
-                document.querySelector('[data-view="summaryView"]').click();
-            });
-
-            // Score and putts inputs
-            document.getElementById('score').addEventListener('input', () => {
-                saveHoleData();
-                updateScoreToPar();
-            });
-            document.getElementById('putts').addEventListener('input', saveHoleData);
-            document.getElementById('fairway').addEventListener('change', saveHoleData);
-
-            // Counter buttons
-            document.querySelectorAll('.counter-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const stat = e.target.dataset.stat;
-                    const action = e.target.dataset.action;
-                    const countEl = document.getElementById(`${stat}Count`);
-                    
-                    if (!countEl) return;
-                    
-                    let count = parseInt(countEl.textContent) || 0;
-                    
-                    if (action === 'plus') {
-                        count++;
-                    } else if (action === 'minus' && count > 0) {
-                        count--;
-                    }
-                    
-                    countEl.textContent = count;
-                    
-                    initHole(currentHoleNum);
-                    const hole = roundData.holes[currentHoleNum];
-                    
-                    if (stat === 'outside100' || stat === 'inside100') {
-                        hole[stat] = count;
-                    } else {
-                        if (!hole[stat]) {
-                            hole[stat] = { attempts: 0, successes: [] };
-                        }
-                        hole[stat].attempts = count;
-                        if (action === 'plus') {
-                            hole[stat].successes.push(undefined);
-                        } else if (action === 'minus' && hole[stat].successes.length > 0) {
-                            hole[stat].successes.pop();
-                        }
-                        updateSuccessTrackers();
-                    }
-                    
-                    const minusBtn = document.querySelector(`.counter-btn[data-stat="${stat}"][data-action="minus"]`);
-                    if (minusBtn) {
-                        minusBtn.disabled = count === 0;
-                    }
-                    
-                    saveHoleData();
-                });
-            });
-
-            // Course management
-            document.getElementById('courseSelect').addEventListener('change', (e) => {
-                const courseName = e.target.value;
-                if (courseName && courses[courseName]) {
-                    currentCourse = courses[courseName];
-                    roundData.course = courseName;
-                    localStorage.setItem('currentRound', JSON.stringify(roundData));
-                    loadHoleData();
-                } else {
-                    currentCourse = null;
-                    roundData.course = '';
-                    loadHoleData();
-                }
-            });
-
-            document.getElementById('manageCourses').addEventListener('click', () => {
-                loadCourseList();
-                document.getElementById('courseModal').classList.add('active');
-            });
-
-            document.getElementById('closeModal').addEventListener('click', () => {
-                document.getElementById('courseModal').classList.remove('active');
-            });
-
-            document.getElementById('saveCourse').addEventListener('click', () => {
-                const name = document.getElementById('newCourseName').value.trim();
-                if (!name) {
-                    alert('Please enter a course name');
-                    return;
-                }
-                
-                const pars = [];
-                for (let i = 1; i <= 18; i++) {
-                    pars.push(parseInt(document.getElementById(`par-${i}`).value));
-                }
-                
-                courses[name] = { pars };
-                localStorage.setItem('golfCourses', JSON.stringify(courses));
-                
-                document.getElementById('newCourseName').value = '';
-                loadCourseSelect();
-                loadCourseList();
-                
-                document.getElementById('courseSelect').value = name;
-                document.getElementById('courseSelect').dispatchEvent(new Event('change'));
-                
-                alert(`Course "${name}" saved!`);
-            });
-
-            // View navigation
-            document.querySelectorAll('.bottom-nav button').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    document.querySelectorAll('.bottom-nav button').forEach(b => b.classList.remove('active'));
-                    e.target.classList.add('active');
-                    
-                    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-                    document.getElementById(e.target.dataset.view).classList.add('active');
-                    
-                    if (e.target.dataset.view === 'summaryView') {
-                        calculateSummary();
-                    }
-                });
-            });
-
-            // Export and new round
-            document.getElementById('exportData').addEventListener('click', exportToCSV);
-
-            document.getElementById('newRound').addEventListener('click', () => {
-                if (confirm('Start a new round? Current round data has been saved to history.')) {
-                    roundData = { course: '', date: '', holes: {} };
-                    currentHoleNum = 1;
-                    currentCourse = null;
-                    localStorage.removeItem('currentRound');
-                    document.getElementById('courseSelect').value = '';
-                    document.getElementById('roundDate').value = new Date().toISOString().split('T')[0];
-                    loadHoleData();
-                    document.querySelector('[data-view="roundView"]').click();
-                }
-            });
-        }
-
-        // Initialize on load
-        window.addEventListener('DOMContentLoaded', () => {
+        // Initialize when page loads
+        window.onload = function() {
             try {
                 generateParInputs();
                 loadCourseSelect();
@@ -1536,11 +1526,10 @@ ZlN0YXRzIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9j
                 }
                 
                 loadHoleData();
-                initializeEventListeners();
             } catch (e) {
                 console.error('Initialization error:', e);
             }
-        });
+        };
 
         // Service Worker for offline
         if ('serviceWorker' in navigator) {
